@@ -15,20 +15,21 @@ pipeline {
     }
 
     stage('Run') {
-      steps {
-        dir('translator-api') {
-          // 注入并复制 .env 文件
-          sh 'cp $ENV_FILE .env'
+        steps {
+            dir('translator-api') {
+            // 授权并复制 env
+            sh 'chmod u+w .'
+            sh 'cp $ENV_FILE .env'
 
-          // ✅ 调试输出 .env 文件内容（建议调试完后删除或注释）
-          sh 'echo "========= .env 文件内容如下 ========="'
-          sh 'cat .env'
-          sh 'echo "===================================="'
+            // 打印调试用
+            sh 'echo "========= .env 文件内容如下 ========="'
+            sh 'cat .env'
+            sh 'echo "===================================="'
 
-          // 启动应用
-          sh 'npm run dev'
+            // ✅ 加载 .env 到环境变量（这一步最关键）
+            sh 'export $(cat .env | xargs) && npm run dev'
+            }
         }
-      }
     }
 
     stage('Cleanup') {

@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    // 把 secret file 注入为临时文件路径（ENV_FILE 是变量名，你可以自定义）
+    // 把 secret file 注入为临时文件路径
     ENV_FILE = credentials('ifa-env-file')
   }
 

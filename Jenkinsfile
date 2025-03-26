@@ -2,22 +2,21 @@ pipeline {
   agent any
 
   stages {
-    stage('Clone') {
-      steps {
-        echo 'Cloning...'
-      }
-    }
-
     stage('Install') {
       steps {
-        sh 'npm install'
+        dir('translator-api') {
+          sh 'npm install'
+        }
       }
     }
 
     stage('Run') {
       steps {
-        sh 'npm run dev'
+        dir('translator-api') {
+          sh 'npm run dev'
+        }
       }
     }
   }
 }
+

@@ -22,7 +22,7 @@ pipeline {
           sh 'echo ========= .env 文件内容如下 ========='
           sh 'cat .env'
           sh 'echo ===================================='
-          sh 'cat .env | xargs export && npm run dev &'
+          sh 'set -a && source .env && set +a && npm run dev &'
         }
       }
     }

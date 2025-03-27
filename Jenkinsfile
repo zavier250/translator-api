@@ -2,8 +2,7 @@ pipeline {
   agent any
 
   environment {
-    // 注入 secret file 路径
-    ENV_FILE = credentials('ifa-env-file')
+    ENV_FILE = credentials('ifa-env-file')   // 注入 .env 文件路径
   }
 
   stages {
@@ -18,19 +17,27 @@ pipeline {
     stage('Run') {
       steps {
         dir('translator-api') {
-          // 权限 & 拷贝 env
           sh 'chmod u+w .'
           sh 'cp $ENV_FILE .env'
-          // 加载 .env 为环境变量并运行
-          sh 'export $(cat .env | xargs) && npm run dev'
+          sh 'echo ========= .env 文件内容如下 ========='
+          sh 'cat .env'
+          sh 'echo ===================================='
+          sh 'cat .env | xargs export && npm run dev &'
         }
       }
     }
 
-    stage('Cleanup') {
+    stage('Deploy to EC2') {
       steps {
-        dir('translator-api') {
-          sh 'rm -f .env'
+        sshagent(credentials: ['ifa-ec2-key']) {
+          sh '''
+            ssh -o StrictHostKeyChecking=no ec2-user@54.227.29.184 << EOF
+              cd translator-api
+              git pull origin devops-Rocky
+              npm install
+              pm2 restart translator || pm2 start index.ts --interpreter ts-node --name translator
+            EOF
+          '''
         }
       }
     }

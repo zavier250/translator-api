@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import config from "../../config";
+import config from "../../config/config";
 import { ErrorWithStatus } from "../ErrorHandler";
 import { authErrorMessages } from "../../utils/errorMessages";
 import { ClientErrorStatus } from "../../utils/errorStatusCode";

@@ -84,6 +84,46 @@ export const loginController = async (
   }
 };
 
+
+
+export const getUserProfileController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  
+  try {
+    if (!req.user || !req.user.id) {
+      const error: ErrorWithStatus = new Error(authErrorMessages.UNAUTHORIZED_ACCESS);
+      error.status = ClientErrorStatus.UNAUTHORIZED;
+      return next(error);
+    }
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      const error: ErrorWithStatus = new Error(authErrorMessages.UNAUTHORIZED_ACCESS);
+      error.status = ClientErrorStatus.UNAUTHORIZED;
+      return next(error);
+    }
+    res.status(200).json({
+    //  id: user._id,
+      name: user.name,
+      email: user.email,
+      mobile:user.mobile,
+      language:user.language,
+      selfDescription:user.selfDescription
+      
+    });
+  } catch (error) {
+    const err: ErrorWithStatus = new Error("Failed to retrieve user information");
+    err.status = ClientErrorStatus.NOT_FOUND;
+    next(err);
+  }
+
+
+}
+
+
 export const updateProfileController = async (
   req: Request,
   res: Response,

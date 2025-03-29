@@ -1,14 +1,17 @@
-import express from "express";
+import express, { NextFunction } from "express";
+import { Request, Response, Router } from "express";
 import {
   getUsers,
   registerController,
   loginController,
-  updateProfileController
+  updateProfileController,
+  getUserProfileController
 } from "../../controllers/user.controller";
 import validateBody from "../../middlewares/validation/auth.validation";
 import authValidationSchema from "../../validator/auth/authSchema";
 import authMiddleware from "../../middlewares/JWT/auth.middleware";
-
+import passport from "../../config/passport";
+import {User, IUser} from '../../models/User'
 const router = express.Router();
 
 /**
@@ -50,7 +53,7 @@ const router = express.Router();
  *         - email
  *         - password
  *         - language
- *   
+ *
  * /users:
  *   get:
  *     summary: Retrieve the users list
@@ -75,7 +78,7 @@ const router = express.Router();
  *                 language: "zn"
  *       500:
  *         description: Internal server error.
- *   
+ *
  * /users/register:
  *   post:
  *     summary: Register a new user
@@ -484,5 +487,57 @@ router.patch(
   validateBody(authValidationSchema.update),
   updateProfileController
 );
+
+router.get(
+  "/users/profile",
+  authMiddleware,
+  getUserProfileController
+);
+
+//fontend need to trigger this at the begin to trigger google login page
+router.get(
+  "/users/googleAuth",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+
+//if login successful triger redirect , if login fail trigger route /loginFail
+router.get(
+  "/users/googleAuth/callback",
+  passport.authenticate("google", { failureRedirect: "/loginFail" }),
+  async (req : Request, res: Response) => {
+    if (!req.user || !req.user.id) {
+      return res.redirect("/loginFail"); 
+    }
+    try {
+      const user = req.user as IUser; 
+      const token: string = user.generateLoginToken(); 
+      //res.json({ message: `welcome ${user.name} Google Oauth Successfully `, token });
+
+      res.redirect(`http://localhost:3000/dashboard?token=${token}`);
+    } catch (error) {
+      console.error("Google auth fail:", error);
+      res.redirect("/loginFail");
+    }
+  }
+);
+
+
+router.get("/loginFail", (req: Request, res: Response) => {
+        //TODO:need to write a login fail page in nextjs and route it like localhost:3000/(auth)/loginFail
+  res.status(400).json({
+    success: false,
+    message: "Google login failed. Please try again.",
+  });
+});
+
+router.get("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ message: "logout fail" });
+    }
+    res.json({ message: "logout success" });
+  });
+});
 
 export default router;

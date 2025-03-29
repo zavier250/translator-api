@@ -30,17 +30,8 @@ pipeline {
               git pull origin devops-Rocky &&
               echo 📦 安装依赖... &&
               npm install &&
-              echo 🚀 清理旧的 PM2 实例...
-              pm2 delete all || true
-              echo 🚀 启动 PM2 服务（使用 ts-node/esm）...
-              pm2 start index.ts \\
-                --name translator \\
-                --interpreter $(npm root -g)/ts-node/dist/bin.js \\
-                --node-args="--loader ts-node/esm --experimental-specifier-resolution=node --require tsconfig-paths/register"
-              echo 💾 保存 PM2 状态（开机自启）... &&
-              pm2 save &&
-              echo 🔍 当前 PM2 状态： &&
-              pm2 list
+              echo 🚀 运行 npm run dev（后台）...
+              nohup npm run dev > dev.log 2>&1 &
             "
           '''
         }

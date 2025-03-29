@@ -35,3 +35,5 @@ JWT_SECRET=aQuickBrownFoxJumpAwayALazyDog
 ###### Swagger API DOC URL
 -Once you launch your project successfully, you are about the read and execute this swagger api document
  [Swagger API Docs](http://localhost:8000/api-docs)
+
+...

@@ -31,7 +31,7 @@ pipeline {
               echo 📦 安装依赖... &&
               npm install &&
               echo 🔥 杀掉旧的 Node 进程（如果有）... &&
-              pkill -f "node" || true &&
+              pkill -u ec2-user -f "node" || true
               echo 🚀 运行 npm run dev（后台）...
               nohup npm run dev > dev.log 2>&1 &
             "

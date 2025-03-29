@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    ENV_FILE = credentials('ifa-env-file') // 注入 .env 文件（不展示）
+    ENV_FILE = credentials('ifa-env-file') // Jenkins 注入 .env 文件内容
   }
 
   stages {
@@ -18,33 +18,39 @@ pipeline {
     stage('Deploy to EC2') {
       steps {
         sshagent(credentials: ['ifa-ec2-key']) {
-          sh '''#!/bin/bash
+          sh '''
             echo "🚀 正在将 .env 同步到 EC2..."
             scp -o StrictHostKeyChecking=no "$ENV_FILE" ec2-user@54.227.29.184:~/translator-api/.env
 
             echo "🔧 正在连接 EC2 执行部署命令..."
-            ssh -o StrictHostKeyChecking=no ec2-user@54.227.29.184 <<'ENDSSH'
-cd ~/translator-api
+            ssh -o StrictHostKeyChecking=no ec2-user@54.227.29.184 << 'ENDSSH'
+              cd ~/translator-api
 
-echo "📦 拉取最新代码..."
-git pull origin devops-Rocky
+              echo "📦 拉取最新代码..."
+              git pull origin devops-Rocky
 
-echo "📦 安装依赖..."
-npm install
+              echo "📦 安装依赖..."
+              npm install
 
-echo "🚀 启动/重启 PM2 服务..."
-pm2 restart translator || pm2 start index.ts --name translator --interpreter $(which ts-node)
+              echo "🚀 启动/重启 PM2 服务（使用 ts-node/esm）..."
+              pm2 describe translator > /dev/null
+              if [ $? -eq 0 ]; then
+                pm2 restart translator --update-env
+              else
+                pm2 start index.ts --name translator --interpreter $(which ts-node) -- --loader ts-node/esm
+              fi
 
-echo "💾 保存当前 PM2 状态用于开机自启..."
-pm2 save
-pm2 startup | tail -n 1 | bash
+              echo "💾 保存 PM2 状态（开机自启）..."
+              pm2 save
+              pm2 startup | grep sudo | bash
 
-echo "🔍 当前 PM2 状态："
-pm2 list
-ENDSSH
+              echo "🔍 当前 PM2 状态："
+              pm2 list
+            ENDSSH
           '''
         }
       }
     }
   }
 }
+

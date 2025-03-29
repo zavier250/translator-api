@@ -63,8 +63,8 @@ pipeline {
             ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
               cd ${REMOTE_DIR} &&
               npm install &&
-              pm2 delete ifa-frontend || true &&
-              pm2 start npm --name "ifa-frontend" -- run dev &&
+              pm2 delete ifa-backend || true &&
+              pm2 start npm --name "ifa-backend" -- run dev &&
               pm2 save
             '
           """

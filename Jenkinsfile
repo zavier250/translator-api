@@ -42,7 +42,7 @@ pipeline {
     stage('Generate .env on EC2') {
       steps {
         sshagent (credentials: ["${SSH_CREDENTIALS_ID}"]) {
-          sh """
+          sh '''
             ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
               cd ${REMOTE_DIR} &&
               echo "PORT=${PORT}" > .env &&
@@ -51,7 +51,7 @@ pipeline {
               echo "SWAGGER_DOC_PATH=${SWAGGER_DOC_PATH}" >> .env &&
               echo "JWT_SECRET=$JWT_SECRET" >> .env
             '
-          """
+          '''
         }
       }
     }

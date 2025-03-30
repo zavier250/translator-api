@@ -8,10 +8,10 @@ pipeline {
     SSH_CREDENTIALS_ID = "ifa-ssh-key"
     // below are .env variables
     PORT = 8000
-    DATABASE_URL = "${DATABASE_URL}"
+    // DATABASE_URL = "${DATABASE_URL}"
     API_PREFIX = "/api/v1"
     SWAGGER_DOC_PATH = "/api-docs"
-    JWT_SECRET = "${JWT_SECRET}"
+    // JWT_SECRET = "${JWT_SECRET}"
   }
 
   stages {
@@ -42,16 +42,16 @@ pipeline {
     stage('Generate .env on EC2') {
       steps {
         sshagent (credentials: ["${SSH_CREDENTIALS_ID}"]) {
-          sh '''
-            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
-              cd ${REMOTE_DIR} &&
-              echo "PORT=${PORT}" > .env &&
-              echo "DATABASE_URL=$DATABASE_URL" >> .env &&
-              echo "API_PREFIX=${API_PREFIX}" >> .env &&
-              echo "SWAGGER_DOC_PATH=${SWAGGER_DOC_PATH}" >> .env &&
-              echo "JWT_SECRET=$JWT_SECRET" >> .env
-            '
-          '''
+          sh """
+            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'EOF'
+              cd ${REMOTE_DIR}
+              echo "PORT=${PORT}" > .env
+              echo "DATABASE_URL=\$DATABASE_URL" >> .env
+              echo "API_PREFIX=${API_PREFIX}" >> .env
+              echo "SWAGGER_DOC_PATH=${SWAGGER_DOC_PATH}" >> .env
+              echo "JWT_SECRET=\$JWT_SECRET" >> .env
+            EOF
+          """
         }
       }
     }

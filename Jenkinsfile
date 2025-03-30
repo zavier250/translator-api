@@ -4,7 +4,7 @@ pipeline {
   environment {
     EC2_USER = "ec2-user"
     EC2_HOST = "${INSTANCE_IP}"
-    REMOTE_DIR = "/home/ec2-user/ifa-backend"
+    REMOTE_DIR = "/home/ec2-user/translator-api"
     SSH_CREDENTIALS_ID = "ifa-ssh-key"
     // below are .env variables
     PORT = 8000
@@ -43,14 +43,14 @@ pipeline {
       steps {
         sshagent (credentials: ["${SSH_CREDENTIALS_ID}"]) {
           sh """
-            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'EOF'
+ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} <<'EOF'
               cd ${REMOTE_DIR}
               echo "PORT=${PORT}" > .env
               echo "DATABASE_URL=\$DATABASE_URL" >> .env
               echo "API_PREFIX=${API_PREFIX}" >> .env
               echo "SWAGGER_DOC_PATH=${SWAGGER_DOC_PATH}" >> .env
               echo "JWT_SECRET=\$JWT_SECRET" >> .env
-            EOF
+EOF
           """
         }
       }
